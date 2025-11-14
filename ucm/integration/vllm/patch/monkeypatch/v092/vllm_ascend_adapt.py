@@ -31,7 +31,6 @@ logger = init_logger(__name__)
 
 def _apply_ascend_patch() -> None:
     """Apply patch for vLLM-Ascend."""
-    logger.info("Applying patch for vLLM-Ascend...")
     _patch_attention_v1()
     _patch_mla_v1()
     _patch_model_runner_v1()
@@ -41,7 +40,6 @@ def _apply_ascend_patch() -> None:
 # ========================= vllm_ascend/attention/attention_v1.py =========================
 def _patch_attention_v1() -> None:
     """Patch attention_v1.py for vLLM-Ascend."""
-    logger.info("Patching attention_v1.py for vLLM-Ascend...")
     try:
         from typing import List
 
@@ -164,7 +162,6 @@ def _patch_attention_v1() -> None:
 # ========================= vllm_ascend/attention/mla_v1.py =========================
 def _patch_mla_v1() -> None:
     """Patch mla_v1.py for vLLM-Ascend."""
-    logger.info("Patching mla_v1.py for vLLM-Ascend...")
     try:
         from typing import Optional
 
@@ -466,7 +463,6 @@ def _patch_mla_v1() -> None:
 # ========================= vllm_ascend/worker/model_runner_v1.py =========================
 def _patch_model_runner_v1() -> None:
     """Patch model_runner_v1.py for vLLM-Ascend."""
-    logger.info("Patching model_runner_v1.py for vLLM-Ascend...")
     try:
         from typing import TYPE_CHECKING, List, Optional, Union
 
@@ -1379,7 +1375,6 @@ def _patch_model_runner_v1() -> None:
 # ========================= vllm_ascend/worker/worker_v1.py =========================
 def _patch_worker_v1() -> None:
     """Patch worker_v1.py for vLLM-Ascend."""
-    logger.info("Patching worker_v1.py for vLLM-Ascend...")
     try:
         import copy
         from typing import Optional
@@ -1439,14 +1434,14 @@ def _patch_worker_v1() -> None:
         NPUWorker.execute_model = execute_model
 
         original_init_worker_distributed_environment = (
-            NPUWorker.init_worker_distributed_environment
+            NPUWorker._init_worker_distributed_environment
         )
 
         def patched_init_worker_distributed_environment(self) -> None:
             original_init_worker_distributed_environment(self)
             ensure_ucm_sparse_initialized(self.vllm_config)
 
-        NPUWorker.init_worker_distributed_environment = (
+        NPUWorker._init_worker_distributed_environment = (
             patched_init_worker_distributed_environment
         )
     except ImportError as e:
