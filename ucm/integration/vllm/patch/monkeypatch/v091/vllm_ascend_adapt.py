@@ -120,28 +120,16 @@ def _patch_model_runner_v1() -> None:
 
         import numpy as np
         import torch
-        from vllm.distributed.parallel_state import get_pp_group, get_tp_group
-        from vllm.forward_context import set_forward_context
         from vllm.logger import logger
-        from vllm.model_executor.layers.rotary_embedding import MRotaryEmbedding
-        from vllm.sampling_params import SamplingType
         from vllm.sequence import IntermediateTensors
         from vllm.v1.outputs import EMPTY_MODEL_RUNNER_OUTPUT, ModelRunnerOutput
         from vllm.v1.spec_decode.metadata import SpecDecodeMetadata
         from vllm_ascend.ascend_config import get_ascend_config
         from vllm_ascend.attention.attention_v1 import (
             AscendAttentionState,
-            AscendMetadata,
-        )
-        from vllm_ascend.attention.mla_v1 import (
-            AscendMLAMetadata,
-            CommonAttentionMetadata,
         )
         from vllm_ascend.utils import (
-            ACL_FORMAT_FRACTAL_ND,
-            ACL_FORMAT_FRACTAL_NZ,
             ProfileExecuteDuration,
-            maybe_converting_weight_acl_format,
         )
 
 
@@ -151,9 +139,12 @@ def _patch_model_runner_v1() -> None:
             get_kv_transfer_group,
             has_kv_transfer_group,
         )
-        from vllm.distributed.kv_transfer.kv_connector.v1 import KVConnectorBase_V1
-        from vllm.forward_context import get_forward_context, set_forward_context
         from vllm_ascend.worker.model_runner_v1 import NPUModelRunner
+        from vllm_ascend.attention.utils import AscendCommonAttentionMetadata
+        import vllm_ascend.envs as envs_ascend
+        from vllm_ascend.distributed.utils import is_lmhead_tp
+        import torch.nn as nn
+        from vllm_ascend.ascend_forward_context import set_ascend_forward_context
 
 
         def _process_reqs(
